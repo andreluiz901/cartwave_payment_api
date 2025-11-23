@@ -1,7 +1,7 @@
 import { validate as uuidValidate } from 'uuid';
 
 import { UniqueEntityId } from '@core/domain/entities/unique-entity-id';
-import { InvalidUuidError } from '@/core/errors/invalid-uuid.error';
+import { InvalidUuidError } from '@/core/domain/errors/invalid-uuid.error';
 
 describe('UniqueEntityId', () => {
   it('should throw error when uuid is invalid', () => {
