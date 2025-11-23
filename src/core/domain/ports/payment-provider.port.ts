@@ -14,10 +14,10 @@ export interface PaymentProviderStatusResponse {
 
 export interface PaymentProviderResponse {
   status: string;
-  txId?: string;
+  txId: string;
 }
 
 export interface IPaymentProvider {
-  initiate(PaymentProviderInput): Promise<PaymentProviderResponse>;
+  initiate(input: PaymentProviderInput): Promise<PaymentProviderResponse>;
   getStatus(txId: string): Promise<PaymentProviderStatusResponse>;
 }
