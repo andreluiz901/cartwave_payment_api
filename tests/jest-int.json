@@ -1,0 +1,20 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "../",
+  "testEnvironment": "node",
+  "testRegex": ".int.spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": ["@swc/jest"]
+  },
+  "moduleNameMapper": {
+    "^@core/(.*)$": "<rootDir>/src/core/$1",
+    "^@domain/(.*)$": "<rootDir>/src/core/domain/$1",
+    "^@infra/(.*)$": "<rootDir>/src/infra/$1",
+    "^@/(.*)$": "<rootDir>/src//$1"
+  },
+  "collectCoverageFrom": ["src/**/*.ts", "!src/main.ts", "!src/**/*.module.ts"],
+  "coverageDirectory": "./coverage",
+  "transformIgnorePatterns": ["/node_modules/(?!uuid)/"],
+  "maxWorkers": 1,
+  "testTimeout": 60000
+}

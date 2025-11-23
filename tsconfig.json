@@ -18,6 +18,7 @@
       "@/*": ["./*"],
       "@core/*": ["core/*"],
       "@domain/*": ["core/domain/*"],
+      "@infra/*": ["infra/*"],
     },
     "incremental": true,
     "skipLibCheck": true,
