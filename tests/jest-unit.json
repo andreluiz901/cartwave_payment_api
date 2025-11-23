@@ -1,0 +1,15 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "..",
+  "testRegex": ".*\\.spec\\.ts$",
+  "testPathIgnorePatterns": ["\\.int\\.spec\\.ts$", "\\.e2e\\.spec\\.ts$"],
+  "transform": {"^.+\\.(t|j)s$": ["@swc/jest"]},
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "^@core/(.*)$": "<rootDir>/src/core/$1"
+  },
+  "transformIgnorePatterns": ["/node_modules/(?!uuid)/"],
+  "collectCoverageFrom": ["src/**/*.ts", "!src/main.ts", "!src/**/*.module.ts"],
+  "coverageDirectory": "./coverage",
+  "maxWorkers": 1
+}
