@@ -6,7 +6,10 @@
   "transform": {"^.+\\.(t|j)s$": ["@swc/jest"]},
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/src/$1",
-    "^@core/(.*)$": "<rootDir>/src/core/$1"
+    "^@core/(.*)$": "<rootDir>/src/core/$1",
+    "^@domain/(.*)$": "<rootDir>/src/core/domain/$1",
+    "^@usecases/(.*)$": "<rootDir>/src/core/usecases/$1",
+    "^@infra/(.*)$": "<rootDir>/src/infra/$1"
   },
   "transformIgnorePatterns": ["/node_modules/(?!uuid)/"],
   "collectCoverageFrom": ["src/**/*.ts", "!src/main.ts", "!src/**/*.module.ts"],

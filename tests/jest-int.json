@@ -9,6 +9,7 @@
   "moduleNameMapper": {
     "^@core/(.*)$": "<rootDir>/src/core/$1",
     "^@domain/(.*)$": "<rootDir>/src/core/domain/$1",
+    "^@usecases/(.*)$": "<rootDir>/src/core/usecases/$1",
     "^@infra/(.*)$": "<rootDir>/src/infra/$1",
     "^@/(.*)$": "<rootDir>/src//$1"
   },
