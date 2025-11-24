@@ -22,8 +22,6 @@ export class Payment {
     this._id = id ?? new UniqueEntityId();
     this.props = {
       ...props,
-      txId: props.txId,
-      createdAt: props.createdAt ?? new Date(),
     };
   }
 
