@@ -1,9 +1,22 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
+  "rootDir": "../",
   "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
+  "testRegex": ".e2e.spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
-  }
+    "^.+\\.(t|j)s$": ["@swc/jest"]
+  },
+  "moduleNameMapper": {
+    "^@core/(.*)$": "<rootDir>/src/core/$1",
+    "^@domain/(.*)$": "<rootDir>/src/core/domain/$1",
+    "^@usecases/(.*)$": "<rootDir>/src/core/usecases/$1",
+    "^@infra/(.*)$": "<rootDir>/src/infra/$1",
+    "^@generated/(.*)$": "<rootDir>/src/generated/$1",
+    "^@/(.*)$": "<rootDir>/src//$1"
+  },
+  "collectCoverageFrom": ["src/**/*.ts", "!src/main.ts", "!src/**/*.module.ts"],
+  "coverageDirectory": "./coverage",
+  "transformIgnorePatterns": ["/node_modules/(?!uuid)/"],
+  "testTimeout": 60000,
+  "maxWorkers": 1
 }
