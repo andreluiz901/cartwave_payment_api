@@ -1,7 +1,23 @@
 import { IPaymentRepository } from '@domain/ports/payment-repository.port';
-import { Payment } from '@core/domain/entities/payment.entity';
-import { PrismaClient } from '@generated/prisma/client';
+import {
+  Payment,
+  PaymentCurrency,
+  PaymentMethod,
+  PaymentStatus,
+} from '@core/domain/entities/payment.entity';
 import { UniqueEntityId } from '@core/domain/entities/unique-entity-id';
+import { PrismaClient } from '@/generated/client';
+
+interface PaymentData {
+  id: string;
+  amount: number;
+  currency: PaymentCurrency;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  createdAt: Date;
+  productId: string;
+  txId: string;
+}
 
 export class PrismaPaymentRepository implements IPaymentRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -38,15 +54,15 @@ export class PrismaPaymentRepository implements IPaymentRepository {
     const data = await this.prisma.payment.findUnique({ where: { id } });
     if (!data) return null;
 
-    return this.toDomain(data);
+    return this.toDomain(data as PaymentData);
   }
 
   async findAll(): Promise<Payment[]> {
     const data = await this.prisma.payment.findMany();
-    return data.map((item) => this.toDomain(item));
+    return data.map((item) => this.toDomain(item as PaymentData));
   }
 
-  private toDomain(data: any): Payment {
+  private toDomain(data: PaymentData): Payment {
     return new Payment(
       {
         amount: data.amount,
