@@ -55,7 +55,7 @@ export class Payment {
     return this.props.productId;
   }
 
-  get txId(): string | null {
+  get txId(): string {
     return this.props.txId;
   }
 
