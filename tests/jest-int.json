@@ -4,14 +4,20 @@
   "testEnvironment": "node",
   "testRegex": ".int.spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": ["@swc/jest"]
+    "^.+\\.(t|j)s$": ["@swc/jest", {
+        "jsc": {
+          "target": "es2021"
+        },
+        "sourceMaps": true
+      }]
   },
   "moduleNameMapper": {
     "^@core/(.*)$": "<rootDir>/src/core/$1",
     "^@domain/(.*)$": "<rootDir>/src/core/domain/$1",
     "^@usecases/(.*)$": "<rootDir>/src/core/usecases/$1",
     "^@infra/(.*)$": "<rootDir>/src/infra/$1",
-    "^@/(.*)$": "<rootDir>/src//$1"
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "^@generated/(.*)$": "<rootDir>/src/generated/$1"
   },
   "collectCoverageFrom": ["src/**/*.ts", "!src/main.ts", "!src/**/*.module.ts"],
   "coverageDirectory": "./coverage",

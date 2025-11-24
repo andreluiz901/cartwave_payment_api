@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Payment {
+  id        String   @id
+  amount    Int
+  currency  String
+  method    String
+  status    String
+  txId      String   @map("external_provider_transaction_id")
+  productId String   @map("product_id")
+  createdAt DateTime @default(now())
+
+  @@map("payments")
+}
