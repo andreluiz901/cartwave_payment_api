@@ -1,98 +1,378 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <img src="https://img.shields.io/badge/node-20.x-3C873A?style=for-the-badge&logo=node.js" />
+  <img src="https://img.shields.io/badge/NestJS-10.x-E0234E?style=for-the-badge&logo=nestjs" />
+  <img src="https://img.shields.io/badge/Prisma-7.x-2D3748?style=for-the-badge&logo=prisma" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16.x-316192?style=for-the-badge&logo=postgresql" />
+  <img src="https://img.shields.io/badge/tests-100%25-success?style=for-the-badge&logo=jest" />
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" />
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# Payment API - Cartwave (Desafio Técnico)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+API RESTful para processamento de pagamentos desenvolvida como solução para desafio técnico. A API foi construída com NestJS, Prisma e Arquitetura Hexagonal, com foco em organização, testabilidade e desacoplamento.
 
-## Description
+- ✅ Organização seguindo boas práticas e padrões de projeto
+- ✅ Arquitetura Hexagonal
+- ✅ **100% de cobertura de testes**
+- ✅ Testes de integração com Testcontainers (banco real) e Nock (provider mockado)
+- ✅ Documentação completa da solução e decisões técnicas
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📋 Sobre o Projeto
 
-## Project setup
+Esta API permite iniciar solicitações de pagamento e verificar o status de pagamentos através de integração com um provedor externo fictício. O projeto foi desenvolvido com foco em:
 
-```bash
-$ npm install
+- Arquitetura definida
+- Alta testabilidade
+- Baixo acoplamento
+- Separação clara de responsabilidades
+- Cobertura total de testes
+
+### 🚀 Funcionalidades
+
+- **Iniciar Pagamento** (`POST /api/v1/payments`): Envia requisição ao provedor externo e registra o pagamento como *pending*
+- **Consultar Status** (`GET /api/v1/payments/:paymentId`): Consulta o provider, atualiza banco e retorna status *processed*
+- **Validação de entrada**: DTOs com class-validator para garantir dados válidos
+- **Exception Filters**: Mapeamento automático de erros de domínio para HTTP responses apropriadas
+- **Type-safety**: escrito 100% TypeScript
+
+## 🏗️ Arquitetura
+
+O projeto segue os princípios da **Arquitetura Hexagonal** (Ports and Adapters), separando claramente as responsabilidades:
+
+- **Domain** (Core): Contém as regras de negócio puras, independente de frameworks, banco de dados ou serviços externos
+- **Application**: Casos de uso que orquestram o domínio
+- **Infra**: Implementações concretas (HTTP, Banco de dados, Providers externos)
+
+Esta separação permite:
+
+- **Testabilidade máxima**: Mock fácil de providers e repositórios sem afetar o domínio
+- **Flexibilidade**: Trocar banco de dados ou provider externo sem impactar regras de negócio
+- **Manutenibilidade**: Código claro com responsabilidades bem definidas
+
+```
+src/
+├── core/                                           # Núcleo da aplicação (independente de framework)
+│   ├── domain/
+│   │   ├── entities/                               # Entidades de domínio
+│   │   ├── errors/                                 # Erros de domínio
+│   │   └── ports/                                  # Interfaces (contratos)
+│   └── application/
+│       └── usecases/                               # Casos de uso da aplicação
+│
+├── infra/                                          # Implementações de infraestrutura
+│   ├── db/
+│   │   ├── prisma/                                 # Repositório Prisma + Service
+│   │   └── in-memory-payment.repository.ts         # Repositório em memória (testes)
+│   ├── http/
+│   │   ├── controllers/                            # Controllers HTTP
+│   │   ├── dtos/                                   # Data Transfer Objects
+│   │   └── filters/                                # Exception Filters
+│   └── providers/                                  # Integrações externas
+│
+├── app.module.ts
+└── payment.module.ts
 ```
 
-## Compile and run the project
+## 🎯 Decisões Técnicas
 
-```bash
-# development
-$ npm run start
+### Arquitetura Hexagonal
 
-# watch mode
-$ npm run start:dev
+A arquitetura hexagonal foi escolhida porque:
 
-# production mode
-$ npm run start:prod
+1. **Desacoplamento**: O domínio (regras de negócio) não conhece frameworks, banco de dados ou serviços externos.
+2. **Testabilidade**: Com interfaces (ports) definindo contratos, atingimos testabilidade máxima com mocks eficientes.
+3. **Manutenibilidade**: Mudanças em infraestrutura (trocar banco, mudar provider) não afetam as regras de negócio.
+4. **Escalabilidade**: Fácil adicionar novos adapters (repositórios, providers) sem modificar o core.
+
+### NestJS
+
+1. **Injeção de Dependência nativa**: Facilita a implementação da arquitetura hexagonal
+2. **Modularidade**: Organização clara em módulos
+3. **TypeScript first**: Type-safety em todo o projeto
+4. **Ecossistema maduro**: Validação (class-validator), filtros de exceção, lifecycle hooks
+5. **Integração com testes**: Jest nativo com suporte a mocks
+6. **Community robusta**: Muito usado em produção, boas práticas bem estabelecidas
+
+### Prisma
+
+1. **Type-safety**: Queries tipadas, erros em tempo de compilação
+2. **Migrations**: Versionamento automático com schema do banco
+3. **Adapter pattern**: Permite usar diferentes drivers (PostgreSQL, MySQL, etc)
+4. **DX (Developer Experience)**: Prisma Studio, CLI intuitivo
+5. **Performance**: Queries otimizadas com suporte a raw queries quando necessário
+
+### Erros de Domínio + Exception Filters
+
+Os erros de domínio (`PaymentNotFoundError`, `ExternalProviderPaymentError`) são classes puras que não dependem da infra, HTTP ou framework:
+
+```typescript
+// Erro de domínio - puro, sem framework
+export class PaymentNotFoundError extends Error {
+  constructor(id: string) {
+    super(`Payment with id ${id} not found`);
+  }
+}
 ```
 
-## Run tests
+O domínio permanece puro e o mapeamento para HTTP fica centralizado. O `DomainExceptionFilter` na camada de infraestrutura só então traduz esses erros para respostas HTTP apropriadas:
 
+| Erro de Domínio | HTTP Status |
+|-----------------|-------------|
+| `PaymentNotFoundError` | 404 Not Found |
+| `ExternalProviderPaymentError` | 502 Bad Gateway |
+| `InvalidUuidError` | 400 Bad Request |
+
+
+## 🧪 Estratégia de Testes
+
+### Pirâmide de Testes
+
+Implementamos a **pirâmide de testes** de Mike Cohn, com distribuição equilibrada:
+
+| Nível | Objetivo | Ferramentas | Velocidade | Quantidade |
+|-------|-------------|-------------|------------|------------|
+| **E2E** | Fluxo completo | Supertest + Testcontainers + Nock | 🐢 Lento | 7 testes |
+| **Integração** | Componentes juntos | Testcontainers + Nock | ⚠️ Médio | 13 testes |
+| **Unitários** | Lógica isolada | Jest + Mocks | ⚡ Rápido | 38 testes |
+
+**Total**: 58 testes com **100% de cobertura** em todas as métricas (statements, branches, functions, lines)
+
+### Testcontainers
+
+1. **Banco real**: Testa com PostgreSQL real, não com mocks ou SQLite para testes
+2. **Isolamento**: Cada suite cria seu próprio container isolado
+3. **CI/CD friendly**: Funciona em qualquer ambiente com Docker
+4. **Confiabilidade**: Detecta problemas que mocks podem não detectar
+
+### Nock
+
+1. **Mock HTTP**: Intercepta requisições HTTP para o provider externo
+2. **Determinístico**: Controla totalmente as respostas simulando o provider
+3. **Sem servidor fake**: Não precisa subir servidor mockado
+4. **Especificação clara**: Testa exatamente a interface esperada do provider
+
+### Jest + SWC
+
+Jest é o test runner nativo do NestJS. SWC é um compilador rápido em Rust que acelera significativamente os testes comparado ao TypeScript puro, mantendo compatibilidade total.
+
+## 🚀 Tecnologias
+
+- **Node.js** (v20+)
+- **NestJS** (v10+)
+- **TypeScript**
+- **Prisma 7 + PostgreSQL** (PostgreSQL)
+- **Jest + SWC** (Testes)
+- **Testcontainers** (Testes de integração)
+- **Nock** (Mock HTTP)
+- **Docker** (Banco de dados)
+- **Supertest**
+
+## 📦 Instalação
+
+### Pré-requisitos
+
+- Node.js 20+
+- Docker (para rodar o banco e testes de integração)
+- npm, pnpm ou yarn
+
+### Passos
+
+1. Clone o repositório:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone <url-do-repositorio>
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+2. Instale as dependências (o `npm install` executa automaticamente `prisma generate` via `postinstall`):
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm install
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+3. Configure as variáveis de ambiente:
+```bash
+cp .env.example .env
+```
 
-## Resources
+Certifique-se de configurar:
+- `DATABASE_URL`: URL de conexão com PostgreSQL
+- `PAYMENT_PROVIDER_URL`: URL do provider externo (ex: http://localhost:3001)
 
-Check out a few resources that may come in handy when working with NestJS:
+4. Inicie o banco de dados:
+```bash
+npm run docker:up
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+5. Execute as migrations:
+```bash
+npx prisma migrate dev
+```
 
-## Support
+6. Inicie a aplicação:
+```bash
+npm run start:dev
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+A aplicação estará disponível em `http://localhost:3000`
 
-## Stay in touch
+## ⚙️ Variáveis de Ambiente
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+| Variável | Descrição | Exemplo |
+|----------|-----------|---------|
+| `DATABASE_URL` | URL de conexão com PostgreSQL |
+| `PAYMENT_PROVIDER_URL` | URL do provedor de pagamentos externo |
 
-## License
+## 📡 Endpoints
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Iniciar Pagamento
+
+```http
+POST /api/v1/payments
+Content-Type: application/json
+
+{
+  "amount": 1234,
+  "currency": "BRL",
+  "method": "PAYPAL",
+  "product_id": "5b5fef7e-f8a5-434c-b5f3-a721f12c50fc"
+}
+```
+
+**Resposta (201):**
+```json
+{
+  "paymentId": "uuid",
+  "status": "pending"
+}
+```
+
+### Consultar Status
+
+```http
+GET /api/v1/payments/:paymentId
+```
+
+**Resposta (200):**
+```json
+{
+  "paymentId": "f8d077f4-d0b8-4e82-808f-51ca0ffef2e1",
+  "status": "processed"
+}
+```
+
+### Códigos de Erro
+
+| Código | Descrição |
+|--------|-----------|
+| `400` | Dados inválidos (validação) |
+| `404` | Pagamento não encontrado |
+| `502` | Erro no provedor externo |
+
+## 🧪 Execução dos Testes
+
+### Executar todos os testes e medir cobertura
+```bash
+npm run test:cov
+```
+
+### Testes unitários
+```bash
+npm run test:unit
+```
+
+### Testes de integração
+```bash
+npm run test:int
+```
+
+### Testes E2E
+```bash
+npm run test:e2e
+```
+
+### Cobertura Final
+
+O projeto atinge **100% de cobertura** em todas as métricas:
+
+```
+-------------------------------------|---------|----------|---------|---------|
+File                                 | % Stmts | % Branch | % Funcs | % Lines |
+-------------------------------------|---------|----------|---------|---------|
+All files                            |     100 |      100 |     100 |     100 |
+-------------------------------------|---------|----------|---------|---------|
+```
+
+## 🔄 Fluxo de Pagamento
+
+### Iniciar pagamento
+
+```arduino
+Client → API → Provider → DB
+```
+
+```
+┌─────────┐     POST /payments      ┌─────────┐     init-payment     ┌──────────┐
+│ Cliente │ ──────────────────────► │   API   │ ──────────────────►  │ Provider │
+└─────────┘                         └─────────┘                      └──────────┘
+                                         │                                │
+                                         │  status: "processed"           │
+                                         │ ◄────────────────────────────  │
+                                         │                                
+                                         ▼                                
+                                    ┌─────────┐                           
+                                    │   DB    │  salva com status: "pending"
+                                    └─────────┘                           
+                                         │
+                                         ▼
+                                    Retorna: { status: "pending" }
+```
+
+
+### Consultar pagamento
+
+```arduino
+Client → API → Provider → DB → Client
+```
+
+```
+┌─────────┐   GET /payments/:id    ┌─────────┐    list-payment/:txId  ┌──────────┐
+│ Cliente │ ─────────────────────► │   API   │ ─────────────────────► │ Provider │
+└─────────┘                        └─────────┘                        └──────────┘
+                                        │                                  │
+                                        │  confirma status: "processed"    │
+                                        │ ◄──────────────────────────────  │
+                                        │                                  
+                                        ▼                                  
+                                   ┌─────────┐                             
+                                   │   DB    │  atualiza para "processed"
+                                   └─────────┘                             
+                                        │
+                                        ▼
+                                   Retorna: { status: "processed" }
+```
+
+## 📁 Scripts Disponíveis
+
+| Script | Descrição |
+|--------|-----------|
+| `npm run start:dev` | Inicia em modo desenvolvimento |
+| `npm run build` | Compila o projeto |
+| `npm run test:unit` | Executa testes unitários |
+| `npm run test:int` | Executa testes de integração |
+| `npm run test:e2e` | Executa testes E2E |
+| `npm run test:cov` | Executa todos os testes com cobertura |
+| `npm run docker:up` | Inicia o docker da aplicação com o Banco de Dados |
+| `npm run docker:down` | Para o docker da aplicação com o Banco de Dados |
+
+## 🛠️ Possíveis Melhorias Futuras
+
+- [ ] Adicionar webhook para notificações do provider
+- [ ] Implementar retry com exponential backoff para falhas do provider
+- [ ] Swagger/OpenAPI para documentação interativa
+- [ ] Rate limiting para proteção de API
+- [ ] Logging estruturado (Winston ou Pino)
+- [ ] Metrics e tracing (Prometheus/OpenTelemetry)
+
+## 👤 Autor
+
+André Luiz - Desafio Técnico Cartwave
+
+---
