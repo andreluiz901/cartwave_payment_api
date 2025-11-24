@@ -15,6 +15,7 @@ interface PaymentData {
   method: PaymentMethod;
   status: PaymentStatus;
   createdAt: Date;
+  updatedAt: Date;
   productId: string;
   txId: string;
 }
@@ -70,6 +71,7 @@ export class PrismaPaymentRepository implements IPaymentRepository {
         method: data.method,
         status: data.status,
         createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
         productId: data.productId,
         txId: data.txId,
       },

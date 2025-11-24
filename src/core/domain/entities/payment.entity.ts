@@ -10,18 +10,21 @@ export type PaymentProperties = {
   method: PaymentMethod;
   status: PaymentStatus;
   productId: string;
-  createdAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   txId: string;
 };
 
 export class Payment {
   private readonly _id: UniqueEntityId;
-  private readonly props: PaymentProperties;
+  private props: PaymentProperties;
 
   constructor(props: PaymentProperties, id?: UniqueEntityId) {
     this._id = id ?? new UniqueEntityId();
     this.props = {
       ...props,
+      createdAt: props.createdAt ?? new Date(),
+      updatedAt: props.updatedAt ?? new Date(),
     };
   }
 
@@ -46,7 +49,11 @@ export class Payment {
   }
 
   get createdAt(): Date {
-    return this.props.createdAt;
+    return this.props.createdAt!;
+  }
+
+  get updatedAt(): Date {
+    return this.props.updatedAt!;
   }
 
   get productId(): string {
@@ -57,7 +64,8 @@ export class Payment {
     return this.props.txId;
   }
 
-  markAsProcessed() {
+  markAsProcessed(): void {
     this.props.status = 'processed';
+    this.props.updatedAt = new Date();
   }
 }
