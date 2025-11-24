@@ -7,6 +7,7 @@
   <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" />
 </p>
 
+
 # Payment API - Cartwave (Desafio Técnico)
 
 API RESTful para processamento de pagamentos desenvolvida como solução para desafio técnico. A API foi construída com NestJS, Prisma e Arquitetura Hexagonal, com foco em organização, testabilidade e desacoplamento.
@@ -73,6 +74,47 @@ src/
 └── payment.module.ts
 ```
 
+### Diagrama de Arquitetura em Camadas
+
+```mermaid
+graph TB
+    subgraph "Infra Layer"
+        HTTP["HTTP Layer<br/>(Controllers, DTOs, Filters)"]
+        DB["Database Layer<br/>(Prisma Repository)"]
+        PROVIDER["External Provider<br/>(Payment API Client)"]
+    end
+    
+    subgraph "Application Layer"
+        USECASES["Use Cases<br/>(InitiatePayment, CheckStatus)"]
+    end
+    
+    subgraph "Domain Layer"
+        ENTITIES["Entities<br/>(Payment, UniqueEntityId)"]
+        ERRORS["Domain Errors<br/>(PaymentNotFound, etc)"]
+        PORTS["Ports/Interfaces<br/>(IPaymentRepository, IPaymentProvider)"]
+    end
+    
+    HTTP -->|Input| USECASES
+    USECASES -->|Output| HTTP
+    
+    USECASES -->|Uses| PORTS
+    USECASES -->|Throws| ERRORS
+    USECASES -->|Creates/Updates| ENTITIES
+    
+    PROVIDER -->|Implements| PORTS
+    DB -->|Implements| PORTS
+    
+    HTTP -->|Catches| ERRORS
+    
+    style ENTITIES fill:#90EE90
+    style PORTS fill:#87CEEB
+    style ERRORS fill:#FFB6C6
+    style USECASES fill:#FFD700
+    style HTTP fill:#DDA0DD
+    style DB fill:#F0E68C
+    style PROVIDER fill:#F0E68C
+```
+
 ## 🎯 Decisões Técnicas
 
 ### Arquitetura Hexagonal
@@ -127,15 +169,53 @@ O domínio permanece puro e o mapeamento para HTTP fica centralizado. O `DomainE
 
 ### Pirâmide de Testes
 
+```mermaid
+graph TB
+    subgraph "E2E Tests (7)"
+        E2E["Fluxo completo com<br/>Testcontainers + Nock<br/>- POST /payments<br/>- GET /payments/:id"]
+    end
+    
+    subgraph "Integration Tests (13)"
+        INT1["Repositories com DB real"]
+        INT2["Providers com HTTP mock"]
+        INT3["Casos de uso integrados"]
+    end
+    
+    subgraph "Unit Tests (42)"
+        UNIT1["Entidades"]
+        UNIT2["Use Cases isolados"]
+        UNIT3["Filters/DTOs"]
+        UNIT4["Repositories em memória"]
+    end
+    
+    E2E --> INT1
+    E2E --> INT2
+    E2E --> INT3
+    
+    INT1 --> UNIT1
+    INT2 --> UNIT2
+    INT3 --> UNIT3
+    INT3 --> UNIT4
+    
+    style E2E fill:#FFB6C6
+    style INT1 fill:#DDA0DD
+    style INT2 fill:#DDA0DD
+    style INT3 fill:#DDA0DD
+    style UNIT1 fill:#90EE90
+    style UNIT2 fill:#90EE90
+    style UNIT3 fill:#90EE90
+    style UNIT4 fill:#90EE90
+```
+
 Implementamos a **pirâmide de testes** de Mike Cohn, com distribuição equilibrada:
 
 | Nível | Objetivo | Ferramentas | Velocidade | Quantidade |
 |-------|-------------|-------------|------------|------------|
 | **E2E** | Fluxo completo | Supertest + Testcontainers + Nock | 🐢 Lento | 7 testes |
 | **Integração** | Componentes juntos | Testcontainers + Nock | ⚠️ Médio | 13 testes |
-| **Unitários** | Lógica isolada | Jest + Mocks | ⚡ Rápido | 38 testes |
+| **Unitários** | Lógica isolada | Jest + Mocks | ⚡ Rápido | 42 testes |
 
-**Total**: 58 testes com **100% de cobertura** em todas as métricas (statements, branches, functions, lines)
+**Total**: 64 testes com **100% de cobertura** em todas as métricas (statements, branches, functions, lines)
 
 ### Testcontainers
 
@@ -215,8 +295,9 @@ A aplicação estará disponível em `http://localhost:3000`
 
 ## ⚙️ Variáveis de Ambiente
 
-| Variável | Descrição | Exemplo |
-|----------|-----------|---------|
+| Variável | Descrição |
+|----------|-----------|
+| `PORT` | Porta de exposição da aplicação |
 | `DATABASE_URL` | URL de conexão com PostgreSQL |
 | `PAYMENT_PROVIDER_URL` | URL do provedor de pagamentos externo |
 
@@ -266,6 +347,37 @@ GET /api/v1/payments/:paymentId
 | `404` | Pagamento não encontrado |
 | `502` | Erro no provedor externo |
 
+```mermaid
+graph LR
+    subgraph "Domain Errors"
+        E1["PaymentNotFoundError"]
+        E2["ExternalProviderPaymentError"]
+        E3["InvalidUuidError"]
+    end
+    
+    subgraph "Exception Filter"
+        F["DomainExceptionFilter"]
+    end
+    
+    subgraph "HTTP Responses"
+        H1["404 Not Found"]
+        H2["502 Bad Gateway"]
+        H3["400 Bad Request"]
+    end
+    
+    E1 -->|catch| F -->|map| H1
+    E2 -->|catch| F -->|map| H2
+    E3 -->|catch| F -->|map| H3
+    
+    style E1 fill:#FFB6C6
+    style E2 fill:#FFB6C6
+    style E3 fill:#FFB6C6
+    style F fill:#FFD700
+    style H1 fill:#DDA0DD
+    style H2 fill:#DDA0DD
+    style H3 fill:#DDA0DD
+```
+
 ## 🧪 Execução dos Testes
 
 ### Executar todos os testes e medir cobertura
@@ -303,50 +415,183 @@ All files                            |     100 |      100 |     100 |     100 |
 ## 🔄 Fluxo de Pagamento
 
 ### Iniciar pagamento
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as API/Controller
+    participant UseCase as InitiatePaymentUseCase
+    participant Provider as ExternalPaymentProvider
+    participant Repo as IPaymentRepository
+    participant DB as PostgreSQL
+    
+    Client->>API: POST /api/v1/payments<br/>(amount, currency, method, productId)
+    
+    API->>API: Validar com CreatePaymentDto
+    
+    API->>UseCase: execute(input)
+    
+    UseCase->>Provider: initiate(providerInput)
+    
+    Provider->>Provider: fetch(provider_url/init-payment)
+    
+    alt Provider retorna sucesso
+        Provider-->>UseCase: {status: 'processed', txId}
+        
+        UseCase->>UseCase: new Payment({<br/>...input,<br/>status: 'pending',<br/>txId,<br/>createdAt: now()<br/>})
+        
+        UseCase->>Repo: save(payment)
+        
+        Repo->>DB: INSERT INTO payments
+        
+        DB-->>Repo: success
+        
+        Repo-->>UseCase: void
+        
+        UseCase-->>API: {paymentId, status: 'pending'}
+        
+        API-->>Client: 201 Created<br/>{paymentId, status: 'pending'}
+    else Provider falha
+        Provider-->>UseCase: Error
+        
+        UseCase->>UseCase: throw ExternalProviderPaymentError
+        
+        UseCase-->>API: ExternalProviderPaymentError
+        
+        API->>API: DomainExceptionFilter
+        
+        API-->>Client: 502 Bad Gateway
+    end
 
-```arduino
-Client → API → Provider → DB
-```
-
-```
-┌─────────┐     POST /payments      ┌─────────┐     init-payment     ┌──────────┐
-│ Cliente │ ──────────────────────► │   API   │ ──────────────────►  │ Provider │
-└─────────┘                         └─────────┘                      └──────────┘
-                                         │                                │
-                                         │  status: "processed"           │
-                                         │ ◄────────────────────────────  │
-                                         │                                
-                                         ▼                                
-                                    ┌─────────┐                           
-                                    │   DB    │  salva com status: "pending"
-                                    └─────────┘                           
-                                         │
-                                         ▼
-                                    Retorna: { status: "pending" }
 ```
 
 
 ### Consultar pagamento
 
-```arduino
-Client → API → Provider → DB → Client
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as API/Controller
+    participant UseCase as CheckPaymentStatusUseCase
+    participant Repo as IPaymentRepository
+    participant DB as PostgreSQL
+    participant Provider as ExternalPaymentProvider
+    
+    Client->>API: GET /api/v1/payments/:paymentId
+    
+    API->>UseCase: execute({paymentId})
+    
+    UseCase->>Repo: findById(paymentId)
+    
+    Repo->>DB: SELECT FROM payments WHERE id
+    
+    alt Payment não existe
+        DB-->>Repo: null
+        Repo-->>UseCase: null
+        UseCase->>UseCase: throw PaymentNotFoundError
+        UseCase-->>API: PaymentNotFoundError
+        API-->>Client: 404 Not Found
+    else Payment existe
+        DB-->>Repo: payment
+        Repo-->>UseCase: Payment
+        
+        alt Status já é 'processed'
+            UseCase-->>API: {paymentId, status: 'processed'}
+            API-->>Client: 200 OK
+        else Status é 'pending'
+            UseCase->>Provider: getStatus(payment.txId)
+            
+            Provider->>Provider: fetch(provider_url/list-payment/:txId)
+            
+            alt Provider retorna 'processed'
+                Provider-->>UseCase: {status: 'processed', txId}
+                
+                UseCase->>UseCase: payment.markAsProcessed()<br/>(status = 'processed'<br/>updatedAt = now())
+                
+                UseCase->>Repo: update(payment)
+                
+                Repo->>DB: UPDATE payments SET<br/>status, updatedAt
+                
+                DB-->>Repo: success
+                
+                Repo-->>UseCase: void
+                
+                UseCase-->>API: {paymentId, status: 'processed'}
+                
+                API-->>Client: 200 OK<br/>{paymentId, status: 'processed'}
+            else Provider falha
+                Provider-->>UseCase: Error
+                UseCase->>UseCase: throw ExternalProviderPaymentError
+                UseCase-->>API: ExternalProviderPaymentError
+                API-->>Client: 502 Bad Gateway
+            end
+        end
+    end
 ```
 
+## 🔄 Modelagem de Entidades e Dado
+
+### Modelo Entidade-Relacionamento no Banco de Dados
+
+```mermaid
+
+erDiagram
+    PAYMENT
+    
+    PAYMENT {
+        string id PK "UUID"
+        integer amount
+        string currency "BRL, USD, EUR"
+        string method "PIX, PAYPAL, CREDIT_CARD"
+        string status "pending, processed"
+        string txId "Transaction ID do Provider"
+        string productId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
 ```
-┌─────────┐   GET /payments/:id    ┌─────────┐    list-payment/:txId  ┌──────────┐
-│ Cliente │ ─────────────────────► │   API   │ ─────────────────────► │ Provider │
-└─────────┘                        └─────────┘                        └──────────┘
-                                        │                                  │
-                                        │  confirma status: "processed"    │
-                                        │ ◄──────────────────────────────  │
-                                        │                                  
-                                        ▼                                  
-                                   ┌─────────┐                             
-                                   │   DB    │  atualiza para "processed"
-                                   └─────────┘                             
-                                        │
-                                        ▼
-                                   Retorna: { status: "processed" }
+
+### Modelo das Entidades da camada de domínio
+
+```mermaid
+classDiagram
+    class Payment {
+        -_id: UniqueEntityId
+        -props: PaymentProperties
+        
+        +id: string
+        +amount: number
+        +currency: PaymentCurrency
+        +method: PaymentMethod
+        +status: PaymentStatus
+        +txId: string
+        +productId: string
+        +createdAt: Date
+        +updatedAt: Date
+        
+        +constructor(props, id?)
+        +markAsProcessed(): void
+    }
+    
+    class PaymentProperties {
+        amount: number
+        currency: PaymentCurrency
+        method: PaymentMethod
+        status: PaymentStatus
+        productId: string
+        txId: string
+        createdAt?: Date
+        updatedAt?: Date
+    }
+    
+    class UniqueEntityId {
+        -value: string
+        +constructor(value?)
+        +toString(): string
+    }
+    
+    Payment --> PaymentProperties
+    Payment --> UniqueEntityId
 ```
 
 ## 📁 Scripts Disponíveis
@@ -362,9 +607,9 @@ Client → API → Provider → DB → Client
 | `npm run docker:up` | Inicia o docker da aplicação com o Banco de Dados |
 | `npm run docker:down` | Para o docker da aplicação com o Banco de Dados |
 
-## 🛠️ Possíveis Melhorias Futuras
+## 🛠️ Espaço de Melhorias
 
-- [ ] Adicionar webhook para notificações do provider
+- [ ] Webhook para notificações do provider
 - [ ] Implementar retry com exponential backoff para falhas do provider
 - [ ] Swagger/OpenAPI para documentação interativa
 - [ ] Rate limiting para proteção de API
