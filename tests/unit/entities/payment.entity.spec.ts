@@ -52,6 +52,20 @@ describe('Payment Entity', () => {
     expect(payment.id).toBeDefined();
   });
 
+  it('should create a payment generating a createdAt date', () => {
+    const payment = new Payment({
+      amount: 100,
+      currency: 'BRL',
+      method: 'PAYPAL',
+      status: 'pending',
+      productId: new UniqueEntityId().toString(),
+      txId: new UniqueEntityId().toString(),
+    });
+
+    expect(payment.createdAt).toBeDefined();
+    expect(payment.createdAt).toBeInstanceOf(Date);
+  });
+
   it('should accept an existing UniqueEntityId', () => {
     const id = new UniqueEntityId();
     const baseProps = createPaymentProps();
@@ -70,6 +84,20 @@ describe('Payment Entity', () => {
 
     expect(payment.status).toBe('processed');
     expect(payment.txId).toBe(baseProps.txId);
+  });
+
+  it('should update updatedAt when marking as processed', () => {
+    const baseProps = createPaymentProps();
+    const payment = new Payment(baseProps);
+    const updatedAtBefore = payment.updatedAt;
+
+    // Use a small delay to ensure time difference
+    setTimeout(() => {
+      payment.markAsProcessed();
+      expect(payment.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        updatedAtBefore.getTime(),
+      );
+    }, 5);
   });
 
   it('should use provided createdAt', () => {
@@ -92,5 +120,27 @@ describe('Payment Entity', () => {
       before.getTime(),
     );
     expect(payment.createdAt.getTime()).toBeLessThanOrEqual(after.getTime());
+  });
+
+  it('should generate updatedAt when not provided', () => {
+    const before = new Date();
+    const baseProps = createPaymentProps();
+
+    const payment = new Payment(baseProps);
+    const after = new Date();
+
+    expect(payment.updatedAt.getTime()).toBeGreaterThanOrEqual(
+      before.getTime(),
+    );
+    expect(payment.updatedAt.getTime()).toBeLessThanOrEqual(after.getTime());
+  });
+
+  it('should use provided updatedAt', () => {
+    const updated = new Date('2025-11-24');
+    const baseProps = createPaymentProps();
+
+    const payment = new Payment({ ...baseProps, updatedAt: updated });
+
+    expect(payment.updatedAt).toBe(updated);
   });
 });
