@@ -6,7 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "prisma generate && nest build",
+    "docker:up": "docker compose -f .docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f .docker/docker-compose.yml down",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "postinstall": "prisma generate",
     "start": "nest start",
@@ -18,6 +20,7 @@
     "test:unit": "jest --runInBand --config ./tests/jest-unit.json",
     "test:int": "jest --runInBand --config ./tests/jest-int.json",
     "test:cov": "jest --coverage --config ./tests/jest-cov.json",
+    "test:all": "npm run test:unit && npm run test:int && npm run test:e2e",
     "test:watch": "jest --watch",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --runInBand --config ./tests/jest-e2e.json"

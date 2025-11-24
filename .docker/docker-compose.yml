@@ -1,0 +1,13 @@
+services:
+  postgres:
+    container_name: payment-postgres
+    image: postgres:17
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      PGDATA: /data/postgres
+    volumes:
+      - ./data/pg:/data/postgres
+    ports:
+      - "5432:5432"
