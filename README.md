@@ -414,6 +414,26 @@ All files                            |     100 |      100 |     100 |     100 |
 
 ## 🔄 Fluxo de Pagamento
 
+```mermaid
+flowchart LR
+
+    %% --- Criar Pagamento ---
+    A[Cliente] -->|POST /payments| B[API - Criar Pagamento]
+    B --> C[Provider Externo - init-payment]
+    C -->|Retorna status: processed| B
+    B --> D[(Banco de Dados)]
+    D -->|Salva pagamento com status: pending| B
+    B --> E[Retorno ao Cliente: pending]
+
+    %% --- Consultar Pagamento ---
+    A -->|GET /payments/:id| F[API - Consultar Pagamento]
+    F --> G[Provider Externo - list-payment]
+    G -->|Retorna status: processed| F
+    F --> D
+    D -->|Atualiza pagamento para processed| F
+    F --> H[Retorno ao Cliente: processed]
+```
+
 ### Iniciar pagamento
 ```mermaid
 sequenceDiagram
