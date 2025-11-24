@@ -1,5 +1,5 @@
-import type { IPaymentProvider } from '@/core/domain/ports/payment-provider.port';
-import type { IPaymentRepository } from '@/core/domain/ports/payment-repository.port';
+import { IPaymentProvider } from '@/core/domain/ports/payment-provider.port';
+import { IPaymentRepository } from '@/core/domain/ports/payment-repository.port';
 import {
   Payment,
   PaymentCurrency,
